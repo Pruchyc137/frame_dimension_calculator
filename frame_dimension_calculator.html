@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RG33 Frame Dimension Calculator | AGC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F4EE;
+    --paper-deep:#EFEBE1;
+    --ink:#1B2430;
+    --ink-soft:#5B6472;
+    --line:#DAD4C4;
+    --blueprint:#16324F;
+    --blueprint-soft:#2C5470;
+    --accent:#D9711F;
+    --accent-soft:#F0D9BC;
+    --accent-deep:#B0530F;
+    --glass:#BFE3E8;
+    --glass-stroke:#2E6E7E;
+    --sash:#AEBAC2;
+    --cream:#F4F1E8;
+    --card-bg:#FFFFFF;
+    --good:#3E7C4A;
+    --warn:#B0530F;
+    --mono:'IBM Plex Mono', 'SFMono-Regular', monospace;
+    --thai:'IBM Plex Sans Thai','Inter',sans-serif;
+    --sans:'Inter','IBM Plex Sans Thai',sans-serif;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.4), rgba(255,255,255,0)) ,
+      var(--paper);
+    color:var(--ink);
+    font-family:var(--thai);
+    line-height:1.5;
+    padding:28px 18px 60px;
+  }
+  .app{max-width:1180px;margin:0 auto;}
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:20px;
+    border-bottom:2.5px solid var(--ink);
+    padding-bottom:16px;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
+  .brand .mark{
+    font-family:var(--mono); font-weight:700; font-size:13px; letter-spacing:.14em;
+    background:var(--ink); color:var(--paper); padding:5px 9px; border-radius:4px;
+  }
+  h1{
+    font-family:var(--sans); font-weight:800; font-size:26px; margin:0;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{color:var(--ink-soft); font-size:13.5px; margin-top:2px;}
+  .doc-ref{
+    text-align:right; font-family:var(--mono); font-size:11px; color:var(--ink-soft);
+    line-height:1.6;
+  }
+  .doc-ref b{color:var(--ink); font-weight:600;}
+
+  /* ---------- Tabs ---------- */
+  .tabs{display:flex; gap:6px; margin-bottom:20px;}
+  .tab-btn{
+    font-family:var(--thai); font-weight:600; font-size:14px;
+    padding:10px 18px; border-radius:8px 8px 0 0; border:2px solid transparent;
+    background:transparent; color:var(--ink-soft); cursor:pointer;
+    border-bottom:2.5px solid var(--line);
+    transition:all .15s ease;
+  }
+  .tab-btn.active{
+    color:var(--ink); background:var(--card-bg);
+    border-color:var(--line); border-bottom-color:var(--card-bg);
+  }
+  .tab-btn:hover:not(.active){color:var(--ink);}
+
+  section.panel{display:none;}
+  section.panel.active{display:block;}
+
+  /* ---------- Controls ---------- */
+  .controls{
+    background:var(--card-bg); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px 20px; margin-bottom:20px;
+    display:flex; gap:28px; flex-wrap:wrap; align-items:flex-end;
+  }
+  .field-group{display:flex; flex-direction:column; gap:8px;}
+  .field-label{
+    font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft);
+  }
+  .door-select{display:flex; gap:6px;}
+  .door-select button{
+    width:46px; height:44px; border-radius:8px; border:1.5px solid var(--line);
+    background:var(--paper); font-family:var(--mono); font-weight:700; font-size:16px;
+    color:var(--ink); cursor:pointer; transition:all .12s ease;
+  }
+  .door-select button:hover{border-color:var(--accent);}
+  .door-select button.active{
+    background:var(--blueprint); border-color:var(--blueprint); color:#fff;
+  }
+  .num-field{display:flex; align-items:center; gap:6px;}
+  .num-field input{
+    width:100px; font-family:var(--mono); font-size:17px; font-weight:600;
+    padding:9px 10px; border-radius:8px; border:1.5px solid var(--line);
+    background:var(--paper); color:var(--ink);
+  }
+  .num-field input:focus{outline:none; border-color:var(--accent);}
+  .num-field span{font-family:var(--mono); font-size:12px; color:var(--ink-soft);}
+  .toggle-row{display:flex; gap:8px;}
+  .toggle-row button{
+    padding:9px 14px; border-radius:8px; border:1.5px solid var(--line);
+    background:var(--paper); font-family:var(--thai); font-size:13px; font-weight:500;
+    color:var(--ink-soft); cursor:pointer;
+  }
+  .toggle-row button.active{border-color:var(--blueprint); color:var(--blueprint); background:#EAF0F4; font-weight:600;}
+  .reset-btn{
+    margin-left:auto; font-family:var(--thai); font-size:13px; font-weight:600;
+    color:var(--ink-soft); background:none; border:1.5px dashed var(--line);
+    padding:9px 14px; border-radius:8px; cursor:pointer;
+  }
+  .reset-btn:hover{color:var(--accent-deep); border-color:var(--accent);}
+
+  /* ---------- Main grid ---------- */
+  .main-grid{
+    display:grid; grid-template-columns:1.35fr 1fr; gap:20px;
+  }
+  @media (max-width:920px){ .main-grid{grid-template-columns:1fr;} }
+
+  .diagram-card{
+    background:var(--blueprint); border-radius:var(--radius); padding:14px;
+    position:relative; overflow:hidden;
+  }
+  .diagram-card::before{
+    content:""; position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size:22px 22px;
+    pointer-events:none;
+  }
+  .diagram-caption{
+    font-family:var(--mono); font-size:10.5px; color:#9FB4C6;
+    padding:2px 4px 10px; position:relative; letter-spacing:.03em;
+  }
+  svg#diagram{width:100%; height:auto; display:block; position:relative;}
+
+  .results-panel{display:flex; flex-direction:column; gap:12px;}
+  .result-card{
+    background:var(--card-bg); border:1px solid var(--line); border-left:5px solid var(--blueprint);
+    border-radius:var(--radius); padding:14px 16px;
+  }
+  .result-card.primary{border-left-color:var(--accent);}
+  .result-card .r-label{
+    font-size:12px; font-weight:600; color:var(--ink-soft); text-transform:uppercase;
+    letter-spacing:.05em; display:flex; align-items:center; gap:6px;
+  }
+  .result-card .r-label .swatch{width:9px; height:9px; border-radius:2px; display:inline-block;}
+  .result-card .r-value{
+    font-family:var(--mono); font-weight:700; font-size:23px; color:var(--ink);
+    margin-top:4px; letter-spacing:-0.01em;
+  }
+  .result-card .r-value small{font-size:13px; font-weight:500; color:var(--ink-soft); margin:0 3px;}
+  .result-card .r-note{font-size:11.5px; color:var(--ink-soft); margin-top:3px;}
+
+  .legend{
+    display:flex; flex-wrap:wrap; gap:10px 16px; margin-top:14px;
+    background:var(--card-bg); border:1px solid var(--line); border-radius:var(--radius);
+    padding:12px 16px;
+  }
+  .legend .item{display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-soft);}
+  .legend .sw{width:12px; height:12px; border-radius:3px; border:1px solid rgba(0,0,0,.15);}
+
+  /* ---------- Interactive hover sync (Main + Gap diagrams) ---------- */
+  .result-card[data-layer]{cursor:pointer; transition:box-shadow .15s ease, transform .15s ease;}
+  .result-card[data-layer]:hover, .result-card[data-layer].hl{
+    box-shadow:0 0 0 2px var(--blueprint-soft) inset, 0 4px 14px rgba(22,50,79,0.12);
+    transform:translateY(-1px);
+  }
+  .result-card[data-layer="outer"]:hover, .result-card[data-layer="outer"].hl{ box-shadow:0 0 0 2px var(--accent) inset, 0 4px 14px rgba(217,113,31,0.18); }
+  svg#diagram [data-layer]{cursor:pointer;}
+  svg#diagram [data-layer].hl rect{ stroke:#FFFFFF !important; stroke-width:3.2 !important; }
+  svg#diagram [data-layer].hl{ filter:brightness(1.15) drop-shadow(0 0 6px rgba(255,255,255,0.65)); }
+
+  tr[data-badge]{cursor:pointer; transition:background .12s ease;}
+  tr[data-badge]:hover, tr[data-badge].hl{ background:#F3F0E6; }
+  svg#gapDiagram g[data-badge]{cursor:pointer;}
+  svg#gapDiagram g[data-badge].hl circle{ stroke:#FFFFFF !important; stroke-width:2.5 !important; }
+  svg#gapDiagram g[data-badge].hl{ filter:brightness(1.2) drop-shadow(0 0 6px rgba(255,255,255,0.7)); }
+
+  /* ---------- Parts tab ---------- */
+  .parts-hint{
+    background:#EAF0F4; border:1px solid #C8D8E2; border-radius:var(--radius);
+    padding:12px 16px; font-size:13px; color:var(--blueprint-soft); margin-bottom:18px;
+  }
+  .parts-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px;}
+  @media (max-width:860px){ .parts-grid{grid-template-columns:1fr;} }
+  .part-card{
+    background:var(--card-bg); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px 18px;
+  }
+  .part-card h3{
+    margin:0 0 2px; font-size:14.5px; font-weight:700; display:flex; align-items:center; gap:8px;
+  }
+  .part-card h3 .num{
+    font-family:var(--mono); font-size:11px; background:var(--blueprint); color:#fff;
+    padding:2px 7px; border-radius:5px;
+  }
+  .part-card .desc{font-size:11.5px; color:var(--ink-soft); margin-bottom:10px;}
+  .part-card table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12.5px;}
+  .part-card td{padding:5px 2px; border-bottom:1px dashed var(--line);}
+  .part-card td.k{color:var(--ink-soft); width:38%; font-family:var(--thai);}
+  .part-card td.v{text-align:right; font-weight:600; color:var(--ink);}
+  .part-card td.f{text-align:right; font-size:10.5px; color:#9AA3AD; font-family:var(--mono);}
+  .part-card .na{color:#B7BDC4; font-style:italic;}
+  .part-card .qty{
+    font-size:10px; background:var(--accent-soft); color:var(--accent-deep);
+    padding:1px 6px; border-radius:10px; margin-left:6px; font-family:var(--thai); font-weight:600;
+  }
+
+  /* ---------- Gap tab ---------- */
+  .gap-tables{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:760px){ .gap-tables{grid-template-columns:1fr;} }
+  .gap-table-card{
+    background:var(--card-bg); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px 18px;
+  }
+  .gap-table-card h3{margin:0 0 10px; font-size:14px; font-weight:700;}
+  table.gap-table{width:100%; border-collapse:collapse; font-size:13px;}
+  table.gap-table td{padding:7px 4px; border-bottom:1px dashed var(--line); vertical-align:middle;}
+  table.gap-table td.v{font-family:var(--mono); font-weight:700; text-align:right; width:60px;}
+  table.gap-table td.u{font-family:var(--mono); font-size:11px; color:var(--ink-soft); width:26px;}
+  .badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:22px; height:22px; border-radius:50%; color:#fff; font-size:11px; font-weight:700;
+    font-family:var(--mono);
+  }
+  .b1{background:#D9711F;} .b2{background:#C0392B;} .b3{background:#B0530F;}
+  .b4{background:#A6501F;} .b5{background:#8E4A2E;}
+  .b6{background:#2C5470;} .b7{background:#16324F;} .b8{background:#3E7C4A;} .b9{background:#2E6E7E;}
+
+  footer{margin-top:30px; text-align:center; font-size:11px; color:var(--ink-soft);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div>
+      <div class="brand">
+        <h1>AGC RG33 คำนวณขนาด Frame &amp; บานประตู</h1>
+      </div>
+      <div class="subtitle">Frame / Door Dimension Calculator — คำนวณ Outer, Opening, Actual Frame, Door Dimension และ Door Gap Width</div>
+    </div>
+    <div class="doc-ref">
+      อ้างอิง <b>RG33 Thai – Frame parts design rule</b><br>
+      + Basic Dimension (Standard Size) RG33<br>
+      หน่วย: มิลลิเมตร (mm)
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="main">ขนาดหลัก (Main Dimensions)</button>
+    <button class="tab-btn" data-tab="gap">Door Gap Width</button>
+    <button class="tab-btn" data-tab="parts">รายละเอียดชิ้นส่วน (Parts Design)</button>
+  </div>
+
+  <!-- ============ TAB 1: MAIN ============ -->
+  <section class="panel active" id="tab-main">
+
+    <div class="controls">
+      <div class="field-group">
+        <div class="field-label">จำนวนบานประตู · Doors</div>
+        <div class="door-select" id="doorSelect">
+          <button data-n="1">1</button>
+          <button data-n="2" class="active">2</button>
+          <button data-n="3">3</button>
+          <button data-n="4">4</button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Door Outer Width (WD)</div>
+        <div class="num-field"><input type="number" id="inputWD" value="748" step="0.5"><span>mm</span></div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Door Outer Height (HD)</div>
+        <div class="num-field"><input type="number" id="inputHD" value="1836" step="0.5"><span>mm</span></div>
+      </div>
+
+      <button class="reset-btn" id="resetBtn">↺ ค่าเริ่มต้น RG33</button>
+    </div>
+
+    <div class="main-grid">
+      <div class="diagram-card">
+        <div class="diagram-caption">FRONT ELEVATION — SCHEMATIC (ไม่ใช่มาตราส่วนจริงทุกจุด) · เลื่อนเมาส์ชี้เพื่อดูรายละเอียด</div>
+        <svg id="diagram" viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+
+      <div class="results-panel">
+        <div class="result-card primary" data-layer="outer">
+          <div class="r-label"><span class="swatch" style="background:var(--accent)"></span>Frame Outer Dimension</div>
+          <div class="r-value" id="out-outer">–</div>
+          <div class="r-note">ขนาดรอบนอกสุดของเฟรม (สำหรับเจาะช่องติดตั้ง)</div>
+        </div>
+        <div class="result-card" data-layer="opening">
+          <div class="r-label"><span class="swatch" style="background:#9FB4C6"></span>Opening Dimension</div>
+          <div class="r-value" id="out-opening">–</div>
+          <div class="r-note">ขนาดช่องเปิดสำหรับติดตั้ง (Refrigerator opening) — อ้างอิงตาราง Basic Dimension มาตรฐาน RG33</div>
+        </div>
+        <div class="result-card" data-layer="actual">
+          <div class="r-label"><span class="swatch" style="background:var(--sash)"></span>Actual Frame Dimension</div>
+          <div class="r-value" id="out-actual">–</div>
+          <div class="r-note">ขนาดเฟรมจริง (WF × HF) — ค่าตั้งต้นของทุกสูตรคำนวณ</div>
+        </div>
+        <div class="result-card" data-layer="door">
+          <div class="r-label"><span class="swatch" style="background:var(--glass)"></span>Door Dimension</div>
+          <div class="r-value" id="out-door">–</div>
+          <div class="r-note">ขนาดบานประตูภายนอก (WD × HD) — ค่าที่ป้อนเข้า</div>
+        </div>
+        <div class="result-card" data-layer="glass">
+          <div class="r-label"><span class="swatch" style="background:#7FD1D8"></span>Glass / IGU Size (ก่อนเข้า Frame)</div>
+          <div class="r-value" id="out-glass">–</div>
+          <div class="r-note">ขนาดกระจก IGU ก่อนใส่เข้าบานประตู = Door dimension − 31 mm</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="item"><span class="sw" style="background:var(--accent-soft); border-color:var(--accent)"></span>Frame Outer (21.5mm ring)</div>
+      <div class="item"><span class="sw" style="background:var(--sash)"></span>ระยะเผื่อขอบเฟรม (10mm)</div>
+      <div class="item"><span class="sw" style="background:var(--cream)"></span>Door clearance gap</div>
+      <div class="item"><span class="sw" style="background:var(--glass)"></span>Door leaf</div>
+      <div class="item"><span class="sw" style="background:#7FD1D8"></span>Glass / IGU</div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 2: DOOR GAP WIDTH ============ -->
+  <section class="panel" id="tab-gap">
+    <div class="parts-hint">
+      ค่าระยะช่องว่างและความกว้าง Sash เป็น <b>ค่ามาตรฐานคงที่ของ RG33</b> (ไม่ขึ้นกับขนาดบานประตูหรือจำนวนบาน) —
+      อ้างอิงจากเอกสาร <b>Basic Dimension of RG33 for 7‑Eleven Thailand</b>
+    </div>
+
+    <div class="gap-tables">
+      <div class="gap-table-card">
+        <h3>ระยะช่องว่างบานประตู · Door Gap</h3>
+        <table class="gap-table">
+          <tr data-badge="b1"><td class="badge b1">①</td><td>Door upper gap</td><td class="v">18</td><td class="u">mm</td></tr>
+          <tr data-badge="b2"><td class="badge b2">②</td><td>Door left gap</td><td class="v">13.5</td><td class="u">mm</td></tr>
+          <tr data-badge="b3"><td class="badge b3">③</td><td>Door lower gap</td><td class="v">11</td><td class="u">mm</td></tr>
+          <tr data-badge="b4"><td class="badge b4">④</td><td>Door right gap</td><td class="v">13.5</td><td class="u">mm</td></tr>
+          <tr data-badge="b5"><td class="badge b5">⑤</td><td>Door to door gap</td><td class="v">16</td><td class="u">mm</td></tr>
+        </table>
+      </div>
+      <div class="gap-table-card">
+        <h3>ความกว้าง Sash · Sash Width</h3>
+        <table class="gap-table">
+          <tr data-badge="b6"><td class="badge b6">⑥</td><td>Door sash width (R &amp; L)</td><td class="v">32</td><td class="u">mm</td></tr>
+          <tr data-badge="b7"><td class="badge b7">⑦</td><td>Door sash width (Up &amp; Low)</td><td class="v">32</td><td class="u">mm</td></tr>
+          <tr data-badge="b8"><td class="badge b8">⑧</td><td>Frame sash width (R &amp; L)</td><td class="v">31.5</td><td class="u">mm</td></tr>
+          <tr data-badge="b9"><td class="badge b9">⑨</td><td>Frame sash width (Up &amp; Low)</td><td class="v">31.5</td><td class="u">mm</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="diagram-card" style="margin-top:16px;">
+      <div class="diagram-caption">DOOR GAP &amp; SASH WIDTH — POINTER DIAGRAM · เลื่อนเมาส์ชี้ตัวเลขหรือแถวในตารางเพื่อดูตำแหน่ง</div>
+      <svg id="gapDiagram" viewBox="0 0 1000 640" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+  </section>
+
+  <!-- ============ TAB 3: PARTS ============ -->
+  <section class="panel" id="tab-parts">
+    <div class="parts-hint" id="partsHint"></div>
+    <div class="parts-grid" id="partsGrid"></div>
+  </section>
+
+  <footer>
+    คำนวณจากสูตรใน Design Rule ไฟล์แนบ (Frame parts design rule) — ใช้เพื่อการอ้างอิงระยะติดตั้งเบื้องต้น โปรดตรวจสอบ Tolerance ในเอกสารต้นฉบับก่อนผลิตจริง
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------------- State ----------------
+  const state = { n:2, WD:748, HD:1836 };
+
+  // ---------------- Core formulas (from Design Rule 1ページ / 2-6ページ) ----------------
+  function core(n, WD, HD){
+    const IGU_W = WD - 31;
+    const IGU_H = HD - 31;
+    const WF = n*WD + (n-1)*15 + 47;   // 13.5*2 (side gap) + 10*2 (sash margin)
+    const HF = HD + 49;                // 18(top gap)+11(bottom gap)+10+10(sash margin)
+    // Refrigerator opening dimension — fit to Basic Dimension of RG33 (Standard Size) table:
+    // 2D 1561x1890 / 3D 2329x1890 / 4D 3097x1890 (WD=748,HD=1836)
+    const openW = n*WD + (n-1)*20 + 45;
+    const openH = HD + 54;
+    const outerW = WF + 43;            // 21.5mm ring each side
+    const outerH = HF + 43;            // standalone frame (21.5mm cap top+bottom)
+    return { IGU_W, IGU_H, WF, HF, openW, openH, outerW, outerH };
+  }
+
+  function fmt(v){
+    const r = Math.round(v*10)/10;
+    return (Math.abs(r - Math.round(r)) < 1e-6) ? String(Math.round(r)) : r.toFixed(1);
+  }
+  function fmtPair(w,h){ return `${fmt(w)}<small>×</small>${fmt(h)} <small>mm</small>`; }
+
+  // ---------------- Render results ----------------
+  function renderResults(){
+    const { n, WD, HD } = state;
+    const c = core(n, WD, HD);
+    document.getElementById('out-outer').innerHTML = fmtPair(c.outerW, c.outerH);
+    document.getElementById('out-opening').innerHTML = fmtPair(c.openW, c.openH);
+    document.getElementById('out-actual').innerHTML = fmtPair(c.WF, c.HF);
+    document.getElementById('out-door').innerHTML = fmtPair(WD, HD);
+    document.getElementById('out-glass').innerHTML = fmtPair(c.IGU_W, c.IGU_H);
+  }
+
+  // ---------------- Diagram ----------------
+  function svgRect(x,y,w,h,fill,stroke,sw){
+    stroke = stroke || 'none'; sw = sw||0;
+    return `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}" fill="${fill}" ${stroke!=='none'?`stroke="${stroke}" stroke-width="${sw}"`:''} />`;
+  }
+  function svgRectHL(x,y,w,h,fill,stroke,sw,layer,titleText){
+    const rect = svgRect(x,y,w,h,fill,stroke,sw);
+    const t = titleText ? `<title>${titleText}</title>` : '';
+    return `<g data-layer="${layer}">${t}${rect}</g>`;
+  }
+  function svgText(x,y,txt,opts){
+    opts = opts||{};
+    const anchor = opts.anchor||'middle';
+    const size = opts.size||12;
+    const color = opts.color||'#EAF0F4';
+    const weight = opts.weight||500;
+    const family = opts.mono===false ? "IBM Plex Sans Thai, sans-serif" : "IBM Plex Mono, monospace";
+    const rot = opts.rot ? ` transform="rotate(${opts.rot} ${x} ${y})"` : '';
+    return `<text x="${x.toFixed(2)}" y="${y.toFixed(2)}" text-anchor="${anchor}" font-size="${size}" font-family="${family}" font-weight="${weight}" fill="${color}"${rot}>${txt}</text>`;
+  }
+  function dimLineH(x1,x2,y,label,color){
+    let s = `<line x1="${x1}" y1="${y-6}" x2="${x1}" y2="${y+6}" stroke="${color}" stroke-width="1.2"/>`;
+    s += `<line x1="${x2}" y1="${y-6}" x2="${x2}" y2="${y+6}" stroke="${color}" stroke-width="1.2"/>`;
+    s += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${color}" stroke-width="1.2"/>`;
+    s += svgText((x1+x2)/2, y-8, label, {color, size:12.5, weight:600});
+    return s;
+  }
+  function dimLineV(y1,y2,x,label,color){
+    let s = `<line x1="${x-6}" y1="${y1}" x2="${x+6}" y2="${y1}" stroke="${color}" stroke-width="1.2"/>`;
+    s += `<line x1="${x-6}" y1="${y2}" x2="${x+6}" y2="${y2}" stroke="${color}" stroke-width="1.2"/>`;
+    s += `<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${color}" stroke-width="1.2"/>`;
+    s += svgText(x-10, (y1+y2)/2, label, {color, size:12.5, weight:600, rot:-90});
+    return s;
+  }
+
+  function renderDiagram(){
+    const { n, WD, HD } = state;
+    const c = core(n, WD, HD);
+    const outerW = c.outerW, outerH = c.outerH;
+
+    const boxX=195, boxY=55, boxMaxW=690, boxMaxH=380;
+    const scale = Math.min(boxMaxW/outerW, boxMaxH/outerH);
+    const fw = outerW*scale, fh = outerH*scale;
+    const ox = boxX + (boxMaxW-fw)/2;
+    const oy = boxY + (boxMaxH-fh)/2;
+
+    // actual frame ring (21.5mm inset)
+    const afInset = 21.5*scale;
+    const afX = ox+afInset, afY = oy+afInset, afW = c.WF*scale, afH = c.HF*scale;
+
+    // sash margin ring (10mm inset from actual frame)
+    const sash = 10*scale;
+    const sX = afX+sash, sY = afY+sash, sW = afW-2*sash, sH = afH-2*sash;
+
+    // door container offsets within sash box (asymmetric gaps)
+    const gL = 13.5*scale, gR = 13.5*scale, gT = 18*scale, gB = 11*scale;
+    const doorAreaX = sX+gL, doorAreaY = sY+gT;
+    const doorAreaW = sW-gL-gR, doorAreaH = sH-gT-gB;
+    const doorW = WD*scale, doorH = HD*scale;
+    const doorGap = 15*scale;
+
+    let svg = '';
+    // outer
+    svg += svgRectHL(ox,oy,fw,fh,'var(--accent-soft)','#E8A868',1.5,'outer',`Frame Outer: ${fmt(outerW)} × ${fmt(outerH)} mm`);
+    // actual frame
+    svg += svgRectHL(afX,afY,afW,afH,'#AEBAC2','none',0,'actual',`Actual Frame: ${fmt(c.WF)} × ${fmt(c.HF)} mm`);
+    // sash inner cream
+    svg += svgRect(sX,sY,sW,sH,'#F4F1E8','none');
+
+    // doors
+    let dx = doorAreaX;
+    for(let i=0;i<n;i++){
+      svg += `<g data-layer="door"><title>Door Dimension: ${fmt(WD)} × ${fmt(HD)} mm</title>${svgRect(dx,doorAreaY,doorW,doorH,'#BFE3E8','#2E6E7E',1.6)}</g>`;
+      // glass inset (small margin representing frame of the door leaf ~ visual only)
+      const gi = 7;
+      svg += `<g data-layer="glass"><title>Glass / IGU: ${fmt(c.IGU_W)} × ${fmt(c.IGU_H)} mm</title>${svgRect(dx+gi,doorAreaY+gi,doorW-2*gi,doorH-2*gi,'#7FD1D8','#2E6E7E',1)}</g>`;
+      dx += doorW + doorGap;
+    }
+
+    // gap labels (small, only if room)
+    if (doorAreaH > 40){
+      svg += svgText(sX+ (sW)/2, sY+gT/2+4, `① ${fmt(18)}`, {color:'#F0D9BC', size:10.5, weight:600});
+      svg += svgText(sX+ (sW)/2, sY+sH-gB/2+4, `③ ${fmt(11)}`, {color:'#F0D9BC', size:10.5, weight:600});
+    }
+    if (n>1){
+      const midGapX = doorAreaX+doorW+doorGap/2;
+      svg += `<line x1="${midGapX}" y1="${doorAreaY-4}" x2="${midGapX}" y2="${doorAreaY+doorAreaH+4}" stroke="#F0D9BC" stroke-width="0.8" stroke-dasharray="2,2"/>`;
+      svg += svgText(midGapX, doorAreaY-8, `⑤ 15`, {color:'#F0D9BC', size:10, weight:600});
+    }
+
+    // dimension lines
+    svg += dimLineH(afX, afX+afW, oy+fh+34, `Actual Frame ${fmt(c.WF)} mm`, '#9FB4C6');
+    svg += dimLineH(ox, ox+fw, oy+fh+62, `Frame Outer ${fmt(outerW)} mm`, '#F0A868');
+    svg += dimLineV(afY, afY+afH, ox-22, `Actual ${fmt(c.HF)}`, '#9FB4C6');
+    svg += dimLineV(oy, oy+fh, ox-50, `Outer ${fmt(outerH)}`, '#F0A868');
+
+    // door width label on first door
+    svg += svgText(doorAreaX+doorW/2, doorAreaY-16, `WD ${fmt(WD)}`, {color:'#EAF0F4', size:11, weight:600});
+    svg += svgText(doorAreaX-14, doorAreaY+doorH/2, `HD ${fmt(HD)}`, {color:'#EAF0F4', size:11, weight:600, rot:-90});
+
+    document.getElementById('diagram').innerHTML = svg;
+  }
+
+  // ---------------- Door Gap pointer diagram (same true-scale proportions as Main tab) ----------------
+  function badge(cx,cy,label,color){
+    let s = `<circle cx="${cx}" cy="${cy}" r="14" fill="${color}" stroke="#0B1220" stroke-width="1.2"/>`;
+    s += svgText(cx, cy+5, label, {color:'#fff', size:14, weight:700});
+    return s;
+  }
+  function stub(x1,y1,x2,y2,color){
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="1.4"/>`;
+  }
+  // simple clean double-headed arrow (manually drawn triangles, no marker artifacts)
+  function simpleArrowH(cx,cy,len,color){
+    const half=len/2, x1=cx-half, x2=cx+half, hl=6, hw=4.5;
+    let s = `<line x1="${x1+hl}" y1="${cy}" x2="${x2-hl}" y2="${cy}" stroke="${color}" stroke-width="2"/>`;
+    s += `<path d="M${x1},${cy} L${x1+hl},${cy-hw} L${x1+hl},${cy+hw} Z" fill="${color}"/>`;
+    s += `<path d="M${x2},${cy} L${x2-hl},${cy-hw} L${x2-hl},${cy+hw} Z" fill="${color}"/>`;
+    return s;
+  }
+  function simpleArrowV(cx,cy,len,color){
+    const half=len/2, y1=cy-half, y2=cy+half, hl=6, hw=4.5;
+    let s = `<line x1="${cx}" y1="${y1+hl}" x2="${cx}" y2="${y2-hl}" stroke="${color}" stroke-width="2"/>`;
+    s += `<path d="M${cx},${y1} L${cx-hw},${y1+hl} L${cx+hw},${y1+hl} Z" fill="${color}"/>`;
+    s += `<path d="M${cx},${y2} L${cx-hw},${y2-hl} L${cx+hw},${y2-hl} Z" fill="${color}"/>`;
+    return s;
+  }
+
+  function renderGapDiagram(){
+    const { n, WD, HD } = state;
+    const c = core(n, WD, HD);
+    const colors = { b1:'#D9711F', b2:'#C0392B', b3:'#B0530F', b4:'#A6501F', b5:'#8E4A2E',
+                      b6:'#4F86AD', b7:'#5B8FBF', b8:'#3E7C4A', b9:'#2E6E7E' };
+
+    // identical scale/box logic as Main tab diagram — proportions match exactly
+    const outerW = c.outerW, outerH = c.outerH;
+    const boxX=195, boxY=55, boxMaxW=690, boxMaxH=380;
+    const scale = Math.min(boxMaxW/outerW, boxMaxH/outerH);
+    const fw = outerW*scale, fh = outerH*scale;
+    const ox = boxX + (boxMaxW-fw)/2;
+    const oy = boxY + (boxMaxH-fh)/2;
+
+    const afInset = 21.5*scale;
+    const afX = ox+afInset, afY = oy+afInset, afW = c.WF*scale, afH = c.HF*scale;
+
+    const sash = 10*scale;
+    const sX = afX+sash, sY = afY+sash, sW = afW-2*sash, sH = afH-2*sash;
+
+    const gL = 13.5*scale, gR = 13.5*scale, gT = 18*scale, gB = 11*scale;
+    const daX = sX+gL, daY = sY+gT;
+    const daW = sW-gL-gR, daH = sH-gT-gB;
+    const doorW = WD*scale, doorH = HD*scale;
+    const doorGap = 15*scale;
+
+    let svg = '';
+    svg += svgRect(ox,oy,fw,fh,'#F0D9BC','#E8A868',1.5);              // frame outer
+    svg += svgRect(afX,afY,afW,afH,'#AEBAC2','none');                  // frame sash band (⑧⑨)
+    svg += svgRect(sX,sY,sW,sH,'#F4F1E8','none');                      // gap zone (①②③④⑤)
+
+    let dx = daX;
+    const doorX=[];
+    for(let i=0;i<n;i++){
+      doorX.push(dx);
+      svg += svgRect(dx,daY,doorW,doorH,'#2E6E7E','none');             // door sash (⑥⑦)
+      const gi = 7;
+      svg += svgRect(dx+gi,daY+gi,doorW-2*gi,doorH-2*gi,'#BFE3E8','#1B2430',1);
+      dx += doorW + doorGap;
+    }
+    const sIdx = n>=2 ? 1 : 0; // representative door for ⑥⑦ callouts
+
+    const AL = 22; // uniform arrow length (px) — same simple style, colour is the only difference
+
+    // ① Door upper gap
+    {
+      const x = doorX[0]+doorW/2, y = sY+gT/2;
+      let g = simpleArrowV(x, y, AL, colors.b1);
+      g += stub(x, sY, x, oy-14, colors.b1);
+      g += badge(x, oy-28, '①', colors.b1);
+      svg += `<g data-badge="b1"><title>① Door upper gap = 18 mm</title>${g}</g>`;
+    }
+    // ③ Door lower gap
+    {
+      const x = doorX[0]+doorW/2, y = sY+sH-gB/2;
+      let g = simpleArrowV(x, y, AL, colors.b3);
+      g += stub(x, sY+sH, x, oy+fh+14, colors.b3);
+      g += badge(x, oy+fh+28, '③', colors.b3);
+      svg += `<g data-badge="b3"><title>③ Door lower gap = 11 mm</title>${g}</g>`;
+    }
+    // ② Door left gap
+    {
+      const y = daY+doorH/2, x = sX+gL/2;
+      let g = simpleArrowH(x, y, AL, colors.b2);
+      g += stub(sX, y, ox-14, y, colors.b2);
+      g += badge(ox-28, y, '②', colors.b2);
+      svg += `<g data-badge="b2"><title>② Door left gap = 13.5 mm</title>${g}</g>`;
+    }
+    // ④ Door right gap
+    {
+      const y = daY+doorH/2, x = sX+sW-gR/2;
+      let g = simpleArrowH(x, y, AL, colors.b4);
+      g += stub(sX+sW, y, ox+fw+14, y, colors.b4);
+      g += badge(ox+fw+28, y, '④', colors.b4);
+      svg += `<g data-badge="b4"><title>④ Door right gap = 13.5 mm</title>${g}</g>`;
+    }
+    // ⑤ Door to door gap
+    if(n>1){
+      const x = doorX[0]+doorW+doorGap/2, y = daY+doorH*0.3;
+      let g = simpleArrowH(x, y, Math.min(AL, doorGap+8), colors.b5);
+      g += stub(x, y-4, x, y-18, colors.b5);
+      g += badge(x, y-30, '⑤', colors.b5);
+      svg += `<g data-badge="b5"><title>⑤ Door to door gap = 16 mm</title>${g}</g>`;
+    }
+    // ⑥ Door sash width (R&L)
+    {
+      const x = doorX[sIdx]+7, y = daY+doorH*0.62;
+      let g = simpleArrowH(x, y, 14, colors.b6);
+      g += stub(x, y, doorX[sIdx]-16, y+20, colors.b6);
+      g += badge(doorX[sIdx]-30, y+26, '⑥', colors.b6);
+      svg += `<g data-badge="b6"><title>⑥ Door sash width (R & L) = 32 mm</title>${g}</g>`;
+    }
+    // ⑦ Door sash width (Up&Low)
+    {
+      const x = doorX[sIdx]+doorW*0.35, y = daY+7;
+      let g = simpleArrowV(x, y, 14, colors.b7);
+      g += stub(x, y-7, x-14, y-20, colors.b7);
+      g += badge(x-26, y-30, '⑦', colors.b7);
+      svg += `<g data-badge="b7"><title>⑦ Door sash width (Up & Low) = 32 mm</title>${g}</g>`;
+    }
+    // ⑧ Frame sash width (R&L)
+    {
+      const x = afX+sash/2, y = oy+fh*0.28;
+      let g = simpleArrowH(x, y, Math.min(AL, sash+8), colors.b8);
+      g += stub(afX, y, ox-14, y, colors.b8);
+      g += badge(ox-42, y, '⑧', colors.b8);
+      svg += `<g data-badge="b8"><title>⑧ Frame sash width (R & L) = 31.5 mm</title>${g}</g>`;
+    }
+    // ⑨ Frame sash width (Up&Low)
+    {
+      const x = ox+fw*0.72, y = afY+sash/2;
+      let g = simpleArrowV(x, y, Math.min(AL, sash+8), colors.b9);
+      g += stub(x, afY, x, oy-14, colors.b9);
+      g += badge(x, oy-42, '⑨', colors.b9);
+      svg += `<g data-badge="b9"><title>⑨ Frame sash width (Up & Low) = 31.5 mm</title>${g}</g>`;
+    }
+
+    svg += svgText(ox+fw/2, oy+fh+70, `แสดงตัวอย่างเฟรม ${n} บาน (จำนวนบานปรับได้ที่แท็บ "ขนาดหลัก") — สัดส่วนเดียวกับหน้าขนาดหลัก`, {color:'#9FB4C6', size:12, weight:500, mono:false});
+
+    document.getElementById('gapDiagram').innerHTML = svg;
+  }
+
+  // ---------------- Parts tab ----------------
+  function na(v){ return v===null ? '<span class="na">— ไม่มีชิ้นนี้</span>' : `${fmt(v)} mm`; }
+
+  function partCard(numLabel, title, desc, rows){
+    let rowsHtml = rows.map(r=>{
+      const qty = r.qty ? `<span class="qty">${r.qty}</span>` : '';
+      return `<tr><td class="k">${r.k}${qty}</td><td class="v">${r.v===null?'<span class="na">—</span>':r.v}</td><td class="f">${r.f||''}</td></tr>`;
+    }).join('');
+    return `<div class="part-card">
+      <h3><span class="num">${numLabel}</span>${title}</h3>
+      <div class="desc">${desc}</div>
+      <table>${rowsHtml}</table>
+    </div>`;
+  }
+
+  function renderParts(){
+    const { n, WD, HD } = state;
+    const c = core(n, WD, HD);
+    const WF=c.WF, HF=c.HF;
+
+    document.getElementById('partsHint').innerHTML =
+      `กำลังคำนวณสำหรับ <b>${n} บาน</b> · WD=${fmt(WD)}mm · HD=${fmt(HD)}mm · WF (Actual Frame Width)=${fmt(WF)}mm · HF (Actual Frame Height)=${fmt(HF)}mm
+       — อ้างอิงหมายเลขชิ้นส่วน ①–⑰ ตามไฟล์ Frame parts design rule`;
+
+    const cards = [];
+
+    // ① Frame outer upper/lower
+    {
+      const L1 = WF+43;
+      const L2 = n>=2 ? WD+52.5 : null;
+      const L3 = n>=3 ? WD+15 : null;
+      const L4 = n>=2 ? WD+52.5 : null;
+      cards.push(partCard('①','Frame Outer (Upper / Lower)','คานบน-ล่างของเฟรมรอบนอก',[
+        {k:'L1 (ความยาวรวม)', v:na(L1), f:'WF+43'},
+        {k:'L2 (ชิ้นปลาย)', v:na(L2), qty: n>=2?'×2':null, f:'WD+52.5'},
+        {k:'L3 (ชิ้นกลาง)', v:na(L3), qty: n>=3 ? (n===4?'×2':'×1') : null, f:'WD+15'},
+        {k:'L4 = L2', v:na(L4), f:'= L2'},
+      ]));
+    }
+    // ② Frame outer left/right
+    {
+      const L1 = HF+43;
+      cards.push(partCard('②','Frame Outer (Left / Right)','ขาข้างซ้าย-ขวาของเฟรมรอบนอก',[
+        {k:'L1', v:na(L1), f:'HF+43'},
+      ]));
+    }
+    // ③ Mullion bar
+    {
+      const L1 = n>=2 ? HF-56 : null;
+      const L2 = n>=2 ? HF-90 : null;
+      cards.push(partCard('④','Mullion Bar','คานกลางระหว่างบานประตู (เสาแบ่งบาน)',[
+        {k:'L1', v:na(L1), qty: n>=2?`×${n-1}`:null, f:'HF−56'},
+        {k:'L2', v:na(L2), qty: n>=2?`×${n-1}`:null, f:'HF−90'},
+      ]));
+    }
+    // ⑤⑥ PVC cover outer upper/lower
+    {
+      const L1 = WF;
+      const L2 = n>=2 ? WD+31 : null;
+      const L3 = n>=3 ? WD+15 : null;
+      const L4 = n>=2 ? WD+1.5 : null;
+      const L5 = n>=3 ? WD-44 : null;
+      cards.push(partCard('⑤⑥','PVC Cover Outer (Upper / Lower)','ฝาครอบ PVC ด้านบน-ล่าง (บนล่างเหมือนกัน)',[
+        {k:'L1', v:na(L1), f:'= WF'},
+        {k:'L2', v:na(L2), qty:n>=2?'×2':null, f:'WD+31'},
+        {k:'L3', v:na(L3), qty: n>=3?(n===4?'×2':'×1'):null, f:'WD+15'},
+        {k:'L4', v:na(L4), qty:n>=2?'×2':null, f:'L2−29.5'},
+        {k:'L5', v:na(L5), qty: n>=3?(n===4?'×2':'×1'):null, f:'L3−59'},
+      ]));
+    }
+    // ⑦ PVC cover left/right
+    {
+      const L1 = HF;
+      cards.push(partCard('⑦','PVC Cover (Left / Right)','ฝาครอบ PVC ด้านข้าง — ความยาวรวม',[
+        {k:'L1', v:na(L1), f:'= HF'},
+      ]));
+    }
+    // ⑧ PVC cover mullion
+    {
+      const L1 = n>=2 ? HF-101 : null;
+      const L2 = n>=2 ? HF-508 : null;
+      cards.push(partCard('⑧','PVC Cover (Mullion)','ฝาครอบ PVC บริเวณเสากลาง',[
+        {k:'L1', v:na(L1), qty:n>=2?`×${n-1}`:null, f:'HF−101'},
+        {k:'L2', v:na(L2), qty:n>=2?`×${n-1}`:null, f:'L1−407'},
+      ]));
+    }
+    // ⑨⑩ Cable box upper/lower
+    {
+      const L1 = WF;
+      const L2 = n>=2 ? WD+31 : null;
+      const L3 = n>=3 ? WD+15 : null;
+      const L4 = n>=2 ? WD+13.5 : null;
+      const L5 = n>=3 ? WD-20 : null;
+      cards.push(partCard('⑨⑩','Cable Box (Upper / Lower)','กล่องร้อยสายไฟด้านบน-ล่าง',[
+        {k:'L1', v:na(L1), f:'= WF'},
+        {k:'L2', v:na(L2), qty:n>=2?'×2':null, f:'WD+31'},
+        {k:'L3', v:na(L3), qty: n>=3?(n===4?'×2':'×1'):null, f:'WD+15'},
+        {k:'L4', v:na(L4), qty:n>=2?'×2':null, f:'L2−17.5'},
+        {k:'L5', v:na(L5), qty: n>=3?(n===4?'×2':'×1'):null, f:'L3−35'},
+      ]));
+    }
+    // ⑪ Cable box left/right
+    {
+      const L1 = HF, L2 = HF-508;
+      cards.push(partCard('⑪','Cable Box (Left / Right)','กล่องร้อยสายไฟด้านข้าง (ค่าคงที่ ไม่ขึ้นกับจำนวนบาน)',[
+        {k:'L1', v:na(L1), f:'= HF'},
+        {k:'L2', v:na(L2), f:'L1−508'},
+      ]));
+    }
+    // ⑫ Cosmetic plate outer upper/lower
+    {
+      const L1 = WF-48;
+      cards.push(partCard('⑫','Cosmetic Plate Outer (Up/Low)','แผ่นตกแต่งผิวนอกด้านบน-ล่าง',[
+        {k:'L1', v:na(L1), f:'WF−48'},
+      ]));
+    }
+    // ⑬⑭ Cosmetic plate L/R + mullion
+    {
+      const L1 = HF-87;
+      const Lm = n>=2 ? HF-91 : null;
+      cards.push(partCard('⑬⑭','Cosmetic Plate (L/R &amp; Mullion)','แผ่นตกแต่งผิวนอกด้านข้าง / เสากลาง',[
+        {k:'ด้านข้าง L1', v:na(L1), f:'HF−87'},
+        {k:'เสากลาง L1', v:na(Lm), qty:n>=2?`×${n-1}`:null, f:'HF−91'},
+      ]));
+    }
+    // ⑮ Frame harness
+    {
+      const hL1 = WD/2-47.5, hL2 = WD/2+1490;
+      const rows = [
+        {k:'L1 (ทุกบาน)', v:na(hL1), qty:`×${n}`, f:'WD/2−47.5'},
+        {k:'L2 (ทุกบาน)', v:na(hL2), qty:`×${n}`, f:'WD/2+1490'},
+      ];
+      if(n===2){ rows.push({k:'Harness (B) L1', v:na(335), f:'fixed 335'}); rows.push({k:'Harness (B) L2', v:na(475), f:'fixed 475'}); }
+      if(n===3||n===4){
+        rows.push({k:'L3', v:na(WD/1.5-55), f:'WD/1.5−55'});
+        rows.push({k:'L4', v:na(1.67*WD-568), f:'1.67·WD−568'});
+      }
+      if(n===4){ rows.push({k:'L5', v:na(2.67*WD-1147), f:'2.67·WD−1147'}); }
+      cards.push(partCard('⑮','Frame Harness','สายรัดเฟรม (ความยาวสายไฟภายในเฟรม)', rows));
+    }
+    // ⑯ Sponge for mullion
+    {
+      const L1 = n>=2 ? HF-105 : null;
+      cards.push(partCard('⑯','Sponge (Mullion Bar)','ฟองน้ำยางกันรั่วบริเวณเสากลาง',[
+        {k:'L1', v:na(L1), qty:n>=2?`×${n-1}`:null, f:'HF−105'},
+      ]));
+    }
+    // ⑰⑱ Code heater
+    {
+      const LCouter = (WF-48)*2 + (HF-48)*2;
+      const LCmullion = n>=2 ? (HF-47)*2 : null;
+      cards.push(partCard('⑰⑱','Code Heater (สายไฟฮีตเตอร์)','ความยาวลวดฮีตเตอร์ป้องกันฝ้า/น้ำแข็งเกาะ (LC)',[
+        {k:'Frame outer — LC', v:na(LCouter), f:'(WF−48)·2+(HF−48)·2'},
+        {k:'Mullion — LC', v:na(LCmullion), qty:n>=2?`×${n-1}`:null, f:'(HF−47)·2'},
+      ]));
+    }
+
+    document.getElementById('partsGrid').innerHTML = cards.join('');
+  }
+
+  // ---------------- Render all ----------------
+  function renderAll(){
+    renderResults();
+    renderDiagram();
+    renderGapDiagram();
+    renderParts();
+  }
+
+  // ---------------- Event wiring ----------------
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('#doorSelect button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#doorSelect button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      state.n = parseInt(btn.dataset.n,10);
+      renderAll();
+    });
+  });
+
+  // ---------------- Interactive hover sync: Main tab (result cards <-> diagram layers) ----------------
+  const layerAliases = { opening: 'actual' }; // Opening has no distinct drawn region — highlight Actual Frame instead
+  function setLayerHL(layer, on){
+    const targetLayer = layerAliases[layer] || layer;
+    document.querySelectorAll(`svg#diagram [data-layer="${targetLayer}"]`).forEach(el=>el.classList.toggle('hl', on));
+    document.querySelectorAll(`.result-card[data-layer="${layer}"]`).forEach(el=>el.classList.toggle('hl', on));
+  }
+  document.querySelectorAll('.result-card[data-layer]').forEach(card=>{
+    card.addEventListener('mouseenter', ()=> setLayerHL(card.dataset.layer, true));
+    card.addEventListener('mouseleave', ()=> setLayerHL(card.dataset.layer, false));
+  });
+  const diagramEl = document.getElementById('diagram');
+  diagramEl.addEventListener('mouseover', (e)=>{
+    const t = e.target.closest('[data-layer]');
+    if(t) setLayerHL(t.dataset.layer, true);
+  });
+  diagramEl.addEventListener('mouseout', (e)=>{
+    const t = e.target.closest('[data-layer]');
+    if(t) setLayerHL(t.dataset.layer, false);
+  });
+
+  // ---------------- Interactive hover sync: Door Gap tab (table rows <-> diagram badges) ----------------
+  function setBadgeHL(key, on){
+    document.querySelectorAll(`svg#gapDiagram g[data-badge="${key}"]`).forEach(el=>el.classList.toggle('hl', on));
+    document.querySelectorAll(`tr[data-badge="${key}"]`).forEach(el=>el.classList.toggle('hl', on));
+  }
+  document.querySelectorAll('tr[data-badge]').forEach(row=>{
+    row.addEventListener('mouseenter', ()=> setBadgeHL(row.dataset.badge, true));
+    row.addEventListener('mouseleave', ()=> setBadgeHL(row.dataset.badge, false));
+  });
+  const gapDiagramEl = document.getElementById('gapDiagram');
+  gapDiagramEl.addEventListener('mouseover', (e)=>{
+    const t = e.target.closest('[data-badge]');
+    if(t) setBadgeHL(t.dataset.badge, true);
+  });
+  gapDiagramEl.addEventListener('mouseout', (e)=>{
+    const t = e.target.closest('[data-badge]');
+    if(t) setBadgeHL(t.dataset.badge, false);
+  });
+
+  const inputWD = document.getElementById('inputWD');
+  const inputHD = document.getElementById('inputHD');
+  inputWD.addEventListener('input', ()=>{
+    const v = parseFloat(inputWD.value);
+    if(!isNaN(v) && v>0){ state.WD = v; renderAll(); }
+  });
+  inputHD.addEventListener('input', ()=>{
+    const v = parseFloat(inputHD.value);
+    if(!isNaN(v) && v>0){ state.HD = v; renderAll(); }
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    state.n=2; state.WD=748; state.HD=1836;
+    document.querySelectorAll('#doorSelect button').forEach(b=>b.classList.toggle('active', b.dataset.n==='2'));
+    inputWD.value=748; inputHD.value=1836;
+    renderAll();
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
